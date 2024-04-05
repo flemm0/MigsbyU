@@ -1,0 +1,43 @@
+Table Students {
+  id varchar [primary key]
+  first_name varchar
+  last_name varchar
+  gender varchar
+  address varchar
+  date_of_birth date
+  major varchar
+  year_of_study integer
+  gpa decimal
+  enrollment_status varchar [note: "full-time, part-time"]
+}
+
+Table Professors {
+  id varchar [primary key]
+  title varchar
+  first_name varchar
+  last_name varchar
+  gender varchar
+  address varchar
+  department varchar
+  date_of_birth date
+  annual_salary integer
+}
+
+Table Courses {
+  id varchar [primary key]
+  name varchar
+  units integer
+  department varchar
+}
+
+Table Takes {
+  student_id varchar [ref: > Students.id]
+  course_id varchar [ref: > Courses.id]
+  semester varchar
+}
+
+Table Teaches {
+  professor_id varchar [ref: > Professors.id]
+  course_id varchar [ref: > Courses.id]
+  semester varchar
+}

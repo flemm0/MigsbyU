@@ -1,0 +1,1 @@
+SQLALCHEMY_DATABASE_URL = "postgresql://docker:dockeriscool@db:5432/prod"

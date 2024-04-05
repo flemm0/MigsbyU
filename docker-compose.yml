@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres
+    container_name: migsbyu_pgdb
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: prod
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - migsbyu_network
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: migsbyu_pgadmin4_container
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pguser@example.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    networks:
+      - migsbyu_network
+    # volumes:
+    #   - migsbyu_pgadmin_data:/var/lib/pgadmin
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    image: migsbyu_api
+    restart: "unless-stopped"
+    depends_on:
+      - db
+    networks:
+      - migsbyu_network
+
+networks:
+  migsbyu_network:
+    driver: bridge
+    name: migsbyu_network
+
+# volumes:
+#   migsbyu_pgdata:
+#   migsbyu_pgadmin_data:
