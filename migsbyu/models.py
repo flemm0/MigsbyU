@@ -8,7 +8,7 @@ from .database import Base
 class Student(Base):
     __tablename__ = 'students'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     first_name = Column(String)
     last_name = Column(String)
     gender = Column(String)
@@ -23,7 +23,7 @@ class Student(Base):
 class Professor(Base):
     __tablename__ = 'professors'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     title = Column(String)
     first_name = Column(String)
     last_name = Column(String)

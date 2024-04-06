@@ -3,15 +3,16 @@ from datetime import date
 
 
 class StudentBase(BaseModel):
+    id: str
     first_name: str
     last_name: str
     gender: str
-    address: str
+    address: str | None = None
     date_of_birth: date
-    major: str
+    major: str | None = None
     year_of_study: int
     gpa: float
-    enrollment_status: str
+    enrollment_status: str | None = None
 
 
 class StudentCreate(StudentBase):
@@ -19,6 +20,5 @@ class StudentCreate(StudentBase):
 
 
 class Student(StudentBase):
-    id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
