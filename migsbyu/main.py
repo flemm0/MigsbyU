@@ -23,3 +23,11 @@ def create_student(student: schemas.StudentCreate, db: Session = Depends(get_db)
     if new_student:
         raise HTTPException(status_code=400, detail='Student already registered')
     return crud.create_student(db=db, student=student)
+
+
+@app.get('/students/{id}', response_model=schemas.Student)
+def get_student(student_id: str, db: Session = Depends(get_db)):
+    student = crud.get_student_by_id(db, student_id=student_id)
+    if student is None:
+        raise HTTPException(status_code=404, detail='Student not found')
+    return student
