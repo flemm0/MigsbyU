@@ -33,3 +33,17 @@ def get_student(student_id: str, db: Session = Depends(get_db)):
     if student is None:
         raise HTTPException(status_code=404, detail='Student not found')
     return student
+
+
+@app.get('/students/', response_model=list[schemas.Student])
+def get_students(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    students = crud.get_students(db, skip=skip, limit=limit)
+    return students
+
+
+@app.put('/students/{student_id}', response_model=schemas.Student)
+def update_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
+    existing_student = crud.get_student_by_id(db, student_id=student.id)
+    if not existing_student:
+        raise HTTPException(status_code=400, detail='Student id not registered')
+    return crud.update_student(db=db, student_id=student.id, student=student)
