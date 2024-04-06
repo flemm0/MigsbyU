@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, Double
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, Double, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -43,17 +43,23 @@ class Course(Base):
     department = Column(String)
 
 
-# class Takes(Base):
-#     __tablename__ = 'takes'
+class Takes(Base):
+    __tablename__ = 'takes'
+    __table_args__ = (
+        PrimaryKeyConstraint('student_id', 'course_id', 'semester'),
+    )
 
-#     student_id = Column(String, ForeignKey('students.id'))
-#     course_id = Column(String, ForeignKey('courses.id'))
-#     semester = Column(String)
+    student_id = Column(String, ForeignKey('students.id'))
+    course_id = Column(String, ForeignKey('courses.id'))
+    semester = Column(String)
 
 
-# class Teaches(Base):
-#     __tablename__ = 'teaches'
+class Teaches(Base):
+    __tablename__ = 'teaches'
+    __table_args__ = (
+        PrimaryKeyConstraint('professor_id', 'course_id', 'semester'),
+    )
 
-#     professor_id = Column(String, ForeignKey('professors.id'))
-#     course_id = Column(String, ForeignKey('courses.id'))
-#     semester = Column(String)
+    professor_id = Column(String, ForeignKey('professors.id'))
+    course_id = Column(String, ForeignKey('courses.id'))
+    semester = Column(String)
