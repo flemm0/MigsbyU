@@ -25,11 +25,11 @@ services:
       PGADMIN_DEFAULT_PASSWORD: password
     networks:
       - migsbyu_network
-    # volumes:
-    #   - migsbyu_pgadmin_data:/var/lib/pgadmin
+    volumes:
+      - migsbyu_pgadmin_data:/var/lib/pgadmin
   api:
     build:
-      context: .
+      context: ./api
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
@@ -39,12 +39,24 @@ services:
       - db
     networks:
       - migsbyu_network
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    image: migsbyu_frontend
+    restart: "unless-stopped"
+    depends_on:
+      - db
+      - api
+    networks:
+      - migsbyu_network
 
 networks:
   migsbyu_network:
     driver: bridge
     name: migsbyu_network
 
-# volumes:
-#   migsbyu_pgdata:
-#   migsbyu_pgadmin_data:
+volumes:
+  migsbyu_pgadmin_data:

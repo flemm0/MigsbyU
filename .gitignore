@@ -13,3 +13,10 @@ __pycache__
 
 # Postgres Mount
 postgres/data
+
+# Streamlit
+share/
+etc/
+
+# Testing
+insert_students.sh
