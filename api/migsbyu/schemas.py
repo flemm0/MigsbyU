@@ -60,7 +60,7 @@ class CourseBase(BaseModel):
     id: str
     name: str
     units: int
-    departmnet: str
+    department: str
 
 
 class CourseCreate(CourseBase):
