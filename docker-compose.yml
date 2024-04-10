@@ -14,19 +14,6 @@ services:
       - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     networks:
       - migsbyu_network
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: migsbyu_pgadmin4_container
-    restart: always
-    ports:
-      - "8888:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: pguser@example.com
-      PGADMIN_DEFAULT_PASSWORD: password
-    networks:
-      - migsbyu_network
-    volumes:
-      - migsbyu_pgadmin_data:/var/lib/pgadmin
   api:
     build:
       context: ./api
@@ -57,6 +44,3 @@ networks:
   migsbyu_network:
     driver: bridge
     name: migsbyu_network
-
-volumes:
-  migsbyu_pgadmin_data:
