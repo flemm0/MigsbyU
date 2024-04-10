@@ -32,6 +32,14 @@ tags_metadata = [
     {
         'name': 'courses',
         'description': 'Operations with courses. List all courses, get course information by its id, add new course, or update existing course\'s info.'
+    },
+    {
+        'name': 'enrollments',
+        'description': 'Endpoint for student enrollment in courses.'
+    },
+    {
+        'name': 'assignments',
+        'description': 'Endpoint for professor assignment to teach courses.'
     }
 ]
 
@@ -163,6 +171,94 @@ def delete_course(course_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail='Course id not registered')
     else:
         crud.delete_course(db=db, course_id=course_id)
+        return {'ok': True}
+
+# endregion
+
+
+# region enrollments
+
+@app.post('/enrollments/', response_model=schemas.Enrollment, tags=['enrollments'])
+def enroll_student(enrollment: schemas.EnrollmentCreate, db: Session = Depends(get_db)):
+    existing_enrollment = crud.get_enrollment(db=db, student_id=enrollment.student_id, course_id=enrollment.course_id, semester=enrollment.semester)
+    if existing_enrollment:
+        raise HTTPException(status_code=400, detail='Student already enrolled in this course for specified semester')
+    return crud.enroll_student(db=db, enrollment=enrollment)
+
+
+@app.get('/enrollments/{student_id}', response_model=list[schemas.Enrollment], tags=['enrollments'])
+def get_enrollments_for_student(student_id: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    enrollments = crud.get_enrollments_for_student(db=db, student_id=student_id, skip=skip, limit=limit)
+    if not enrollments:
+        raise HTTPException(status_code=404, detail='Student not enrolled in any courses')
+    return enrollments
+
+
+@app.get('/enrollments/{course_id}', response_model=list[schemas.Enrollment], tags=['enrollments'])
+def get_enrollments_for_course(course_id: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    enrollments = crud.get_enrollments_for_course(db=db, course_id=course_id, skip=skip, limit=limit)
+    if not enrollments:
+        raise HTTPException(status_code=404, detail='No students enrolled in this course')
+    return enrollments
+
+
+@app.get('/enrollments/', response_model=list[schemas.Enrollment], tags=['enrollments'])
+def get_enrollments(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    enrollments = crud.get_enrollments(db, skip=skip, limit=limit)
+    return enrollments
+
+
+@app.delete('/enrollments/', tags=['enrollments'])
+def delete_enrollment(enrollment: schemas.Enrollment, db: Session = Depends(get_db)):
+    existing_enrollment = crud.get_enrollment(db=db, student_id=enrollment.student_id, course_id=enrollment.course_id, semester=enrollment.semester_id)
+    if not existing_enrollment:
+        raise HTTPException(status_code=400, detail='Enrollment not found')
+    else:
+        crud.delete_enrollment(db=db, student_id=enrollment.student_id, course_id=enrollment.course_id, semester=enrollment.semester_id)
+        return {'ok': True}
+    
+# endregion
+
+
+# region assignments
+
+@app.post('/assignments/', response_model=schemas.Assignment, tags=['assignments'])
+def assign_professor(assignment: schemas.AssignmentCreate, db: Session = Depends(get_db)):
+    existing_assignment = crud.get_enrollment(db=db, professor_id=assignment.professor_id, course_id=assignment.course_id, semester=assignment.semester)
+    if existing_assignment:
+        raise HTTPException(status_code=400, detail='Professor already assigned to this course for specified semester')
+    return crud.assign_professor(db=db, assignment=assignment)
+
+
+@app.get('/assignments/{professor_id}', response_model=list[schemas.Assignment], tags=['assignments'])
+def get_assignments_for_professor(professor_id: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    assignments = crud.get_assignments_for_professor(db=db, professor_id=professor_id, skip=skip, limit=limit)
+    if not assignments:
+        raise HTTPException(status_code=404, detail='Professor not assigned to any courses')
+    return assignments
+
+
+@app.get('/assignments/{course_id}', response_model=list[schemas.Assignment], tags=['assignments'])
+def get_assignments_for_course(course_id: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    assignments = crud.get_assignments_for_course(db=db, course_id=course_id, skip=skip, limit=limit)
+    if not assignments:
+        raise HTTPException(status_code=404, detail='No professors assigned to this course')
+    return assignments
+
+
+@app.get('/assignments/', response_model=list[schemas.Assignment], tags=['assignments'])
+def get_assignments(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    assignments = crud.get_assignments(db, skip=skip, limit=limit)
+    return assignments
+
+
+@app.delete('/assignments/', tags=['assignments'])
+def delete_assignment(assignment: schemas.Assignment, db: Session = Depends(get_db)):
+    existing_assignment = crud.get_assignment(db=db, professor_id=assignment.student_id, course_id=assignment.course_id, semester=assignment.semester_id)
+    if not existing_assignment:
+        raise HTTPException(status_code=400, detail='Assignment not found')
+    else:
+        crud.delete_enrollment(db=db, professor_id=assignment.student_id, course_id=assignment.course_id, semester=assignment.semester_id)
         return {'ok': True}
 
 # endregion

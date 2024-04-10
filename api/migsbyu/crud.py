@@ -106,3 +106,85 @@ def delete_course(db: Session, course_id: str):
     return
 
 # endregion
+
+
+# region enrollments
+
+def enroll_student(db: Session, enrollment: schemas.EnrollmentCreate):
+    new_enrollment = models.Takes(**enrollment.model_dump())
+    db.add(new_enrollment)
+    db.commit()
+    db.refresh(new_enrollment)
+    return new_enrollment
+
+
+def get_enrollment(db: Session, student_id: str, course_id: str, semester: str):
+    return db.query(models.Takes).filter(
+        models.Takes.student_id == student_id, 
+        models.Takes.course_id == course_id,
+        models.Takes.semester == semester
+    ).first()
+
+
+def get_enrollments(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Takes).offset(skip).limit(limit).all()
+
+
+def get_enrollments_for_student(db: Session, student_id: str, skip: int = 0, limit: int = 100):
+    return db.query(models.Takes).filter(models.Takes.student_id == student_id).offset(skip).limit(limit).all()
+
+
+def get_enrollments_for_course(db: Session, course_id: str, skip: int = 0, limit: int = 100):
+    return db.query(models.Takes).filter(models.Takes.course_id == course_id).offset(skip).limit(limit).all()
+
+
+def delete_enrollment(db: Session, student_id: str, course_id: str, semester: str):
+    db.query(models.Takes).filter(
+        models.Takes.student_id == student_id, 
+        models.Takes.course_id == course_id,
+        models.Takes.semester == semester
+    ).delete()
+    db.commit()
+    return
+
+# endregion
+
+
+# region assignments
+
+def assign_professor(db: Session, assignment: schemas.AssignmentCreate):
+    new_assignment = models.Teaches(**assignment.model_dump())
+    db.add(new_assignment)
+    db.commit()
+    db.refresh(new_assignment)
+    return new_assignment
+
+
+def get_assignment(db: Session, professor_id: str, course_id: str, semester: str):
+    return db.query(models.Teaches).filter(
+        models.Teaches.professor_id == professor_id, 
+        models.Teaches.course_id == course_id,
+        models.Teaches.semester == semester
+    ).first()
+
+
+def get_assignments(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Teaches).offset(skip).limit(limit).all()
+
+
+def get_assignments_for_professor(db: Session, professor_id: str, skip: int = 0, limit: int = 100):
+    return db.query(models.Teaches).filter(models.Teaches.professor_id == professor_id).offset(skip).limit(limit).all()
+
+
+def get_assignments_for_course(db: Session, course_id: str, skip: int = 0, limit: int = 100):
+    return db.query(models.Teaches).filter(models.Teaches.course_id == course_id).offset(skip).limit(limit).all()
+
+
+def delete_assignment(db: Session, professor_id: str, course_id: str, semester: str):
+    db.query(models.Teaches).filter(
+        models.Teaches.professor_id == professor_id, 
+        models.Teaches.course_id == course_id,
+        models.Teaches.semester == semester
+    ).delete()
+    db.commit()
+    return

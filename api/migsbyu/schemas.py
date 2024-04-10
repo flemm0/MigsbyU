@@ -72,3 +72,41 @@ class Course(CourseBase):
         from_attributes = True
 
 # endregion
+
+
+# region enrollment
+
+class EnrollmentBase(BaseModel):
+    student_id: str
+    course_id: str
+    semester: str
+
+
+class EnrollmentCreate(EnrollmentBase):
+    pass
+
+
+class Enrollment(EnrollmentBase):
+    class Config:
+        from_attributes = True
+
+# endregion
+
+
+# region assignment
+
+class AssignmentBase(BaseModel):
+    professor_id: str
+    course_id: str
+    semester: str
+
+
+class AssignmentCreate(AssignmentBase):
+    pass
+
+
+class Assignment(AssignmentBase):
+    class Config:
+        from_attributes = True
+
+# endregion
