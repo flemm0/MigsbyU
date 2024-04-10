@@ -15,6 +15,15 @@ def add_record(data: dict, table: str):
     return response.status_code
 
 
+def drop_record(data: dict, table: str):
+    response = requests.delete(
+        f'http://api:8000/{table}/',
+        json=data,
+        headers={'accept': 'application/json'}
+    )
+    return response.status_code
+
+
 def edit_record(data: dict, id: str, table: str):
     response = requests.put(
         f'http://api:8000/{table}/{id}',

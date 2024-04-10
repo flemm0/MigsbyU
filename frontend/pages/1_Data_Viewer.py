@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 
-student_tab, professor_tab, course_tab = st.tabs(['Students', 'Professors', 'Courses'])
+student_tab, professor_tab, course_tab, takes_tab, teaches_tab = st.tabs(['Students', 'Professors', 'Courses', 'Enrollments', 'Assignments'])
 
 
 with student_tab:
@@ -318,3 +318,127 @@ with course_tab:
                                 else:
                                     st.error(f'Failed to update course. Status code: {status_code}')
                                 st.rerun()
+
+
+with takes_tab:
+
+    with st.container():
+        response = requests.get(
+            'http://api:8000/enrollments/', 
+            headers={'accept': 'application/json'}
+        )
+        st.header('Table: **Takes** :book:', divider='gray')
+        if response.status_code == 200:
+            data = response.json()
+            table = pl.DataFrame(data).to_pandas()
+            st.dataframe(
+                table,
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.write(f'Error getting API response: {response.status_code}')
+
+    with st.expander('Register Student In Course'):
+        with st.form('Student Enrollment Form'):
+            student_id = st.text_input('Student ID')
+            course_id = st.text_input('Course ID')
+            sem = st.selectbox(label='Semester', options=['Fall', 'Spring'])
+            year = st.number_input(label='Year', min_value=1990, max_value=datetime.today().year, value=datetime.today().year)
+            submit = st.form_submit_button('Submit')
+
+            if submit:
+                new_enrollment = {
+                    'student_id': student_id,
+                    'course_id': course_id,
+                    'semester': sem + ' ' + str(year)
+                }
+                status_code = add_record(data=new_enrollment, table='enrollments')
+                if status_code == 200:
+                    st.success('New enrollment added successfully!')
+                else:
+                    st.error(f'Failed to add new enrollment. Status code: {status_code}')
+                st.rerun()
+
+    with st.expander('Drop Student From Course'):
+        with st.form('Student Drop Enrollment Form'):
+            student_id = st.text_input('Student ID')
+            course_id = st.text_input('Course ID')
+            sem = st.selectbox(label='Semester', options=['Fall', 'Spring'])
+            year = st.number_input(label='Year', min_value=1990, max_value=datetime.today().year, value=datetime.today().year)
+            submit = st.form_submit_button('Submit')
+
+            if submit:
+                existing_enrollment = {
+                    'student_id': student_id,
+                    'course_id': course_id,
+                    'semester': sem + ' ' + str(year)
+                }
+                status_code = drop_record(data=existing_enrollment, table='enrollments')
+                if status_code == 200:
+                    st.success('Enrollment dropped successfully!')
+                    st.rerun()
+                else:
+                    st.error(f'Failed to drop enrollment. {status_code}')
+
+
+with teaches_tab:
+
+    with st.container():
+        response = requests.get(
+            'http://api:8000/assignments/',
+            headers={'accept': 'application/json'}
+        )
+        st.header('Table: **Teaches** :pencil:', divider='gray')
+        if response.status_code == 200:
+            data = response.json()
+            table = pl.DataFrame(data).to_pandas()
+            st.dataframe(
+                table,
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.write(f'Error getting API response: {response.status_code}')
+
+    with st.expander('Assign Professor To Teach Course'):
+        with st.form('Professor Assignment Form'):
+            professor_id = st.text_input('Professor ID')
+            course_id = st.text_input('Course ID')
+            sem = st.selectbox(label='Semester', options=['Fall', 'Spring'])
+            year = st.number_input(label='Year', min_value=1990, max_value=datetime.today().year, value=datetime.today().year)
+            submit = st.form_submit_button('Submit')
+
+            if submit:
+                new_assignment = {
+                    'professor_id': professor_id,
+                    'course_id': course_id,
+                    'semester': sem + ' ' + str(year)
+                }
+                status_code = add_record(data=new_assignment, table='assignments')
+                if status_code == 200:
+                    st.success('New assignment added successfully!')
+                else:
+                    st.error(f'Failed to add new assignment. Status code: {status_code}')
+                st.rerun()
+
+    with st.expander('Drop Professor From Course'):
+        with st.form('Professor Drop Enrollment Form'):
+            professor_id = st.text_input('Professor ID')
+            course_id = st.text_input('Course ID')
+            sem = st.selectbox(label='Semester', options=['Fall', 'Spring'])
+            year = st.number_input(label='Year', min_value=1990, max_value=datetime.today().year, value=datetime.today().year)
+            submit = st.form_submit_button('Submit')
+
+            if submit:
+                existing_assignment = {
+                    'professor_id': professor_id,
+                    'course_id': course_id,
+                    'semester': sem + ' ' + str(year)
+                }
+                status_code = drop_record(data=existing_assignment, table='assignments')
+                if status_code == 200:
+                    st.success('Assignment dropped successfully!')
+                    st.rerun()
+                else:
+                    st.error(f'Failed to drop assignment. {status_code}')
