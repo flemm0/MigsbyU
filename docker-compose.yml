@@ -1,5 +1,5 @@
 services:
-  db:
+  postgres:
     image: postgres
     container_name: migsbyu_pgdb
     restart: always
@@ -23,7 +23,7 @@ services:
     image: migsbyu_api
     restart: "unless-stopped"
     depends_on:
-      - db
+      - postgres
     networks:
       - migsbyu_network
   frontend:
@@ -35,7 +35,7 @@ services:
     image: migsbyu_frontend
     restart: "unless-stopped"
     depends_on:
-      - db
+      - postgres
       - api
     networks:
       - migsbyu_network
