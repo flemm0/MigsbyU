@@ -253,3 +253,68 @@ with course_tab:
             )
         else:
             st.write(f'Error getting API response: {response.status_code}')
+
+    with st.expander('Generate Random Courses'):
+        n_courses = st.number_input(
+            label='Choose number of courses to generate',
+            min_value=1
+        )
+        if st.button('Submit', type='primary', key='generate_random_course'):
+            new_courses = generate_random_courses(n=n_courses)
+            for course in new_courses:
+                requests.post('http://api:8000/courses/', headers={'accept': 'application/json', 'Content-Type': 'application/json'}, data=json.dumps(course, default=str))
+            st.rerun()
+
+    with st.expander('Add New Course'):
+        with st.form('Course Add Form'):
+            st.write('Register new course at MigsbyU')
+            id = st.text_input(label='ID')
+            name = st.text_input(label='Name')
+            units = st.number_input(label='Units', min_value=1, max_value=4)
+            department = st.text_input(label='Department')
+            submit = st.form_submit_button('Submit')
+
+            if submit:
+                new_course_data = {
+                    'id': id,
+                    'name': name,
+                    'units': units,
+                    'department': department
+                }
+                status_code = add_record(data=new_course_data, table='courses')
+                if status_code == 200:
+                    st.success('New course added successfully!')
+                else:
+                    st.error(f'Failed to add new course. Status code: {status_code}')
+                st.rerun()
+
+    with st.expander('Edit Course Data'):
+            st.write('Edit currently course\'s data')
+            course_id = st.text_input(label='Course ID to edit', max_chars=10)
+            if course_id:
+                    response = requests.get(f'http://api:8000/professors/{course_id}', headers={'accept': 'application/json'})
+                    if response.status_code != 200:
+                        st.write('Course ID not found!')
+                    else:
+                        with st.form('Course Edit Form'):
+                            course = response.json()
+                            name = st.text_input(label='Course Name', value=course.get('name'))
+                            units = st.number_input(label='Units', min_value=1, max_value=4, value=course.get('units'))
+                            department = st.text_input(label='Department', value=course.get('department'))
+                    
+                            submit = st.form_submit_button('Submit')
+
+                            if submit:
+                                new_course_data = {
+                                    'id': course_id,
+                                    'name': name,
+                                    'units': units,
+                                    'department': department
+                                }
+
+                                status_code = edit_record(data=new_course_data, id=course_id, table='courses')
+                                if status_code == 200:
+                                    st.success('Course updated successfully!')
+                                else:
+                                    st.error(f'Failed to update course. Status code: {status_code}')
+                                st.rerun()

@@ -12,3 +12,4 @@ st.title('MigsbyU Course Management Portal')
 
 st.write('Hello World!')
 
+st.image('./oltp-db-schema.png')

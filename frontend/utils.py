@@ -90,6 +90,15 @@ def generate_random_students(n: int) -> list[dict]:
     return students
 
 
+def get_random_department() -> dict:
+    department_code = random.choice(config.departments)
+    response = requests.get(f'https://web-app.usc.edu/web/soc/api/classes/{department_code}/20241')
+    return {
+        'department': response.json().get('Dept_Info').get('department'),
+        'department_code': department_code
+    }
+
+
 def generate_random_professors(n: int) -> list[dict]:
     fake = Faker()
     professors = []
@@ -108,24 +117,7 @@ def generate_random_professors(n: int) -> list[dict]:
             gender = 'Female'
         address = fake.address()
         date_of_birth = fake.date_of_birth(minimum_age=30, maximum_age=70)
-        department = fake.random_element(
-            elements=(
-                'Computer Science', 
-                'Data Science',
-                'Engineering', 
-                'Psychology', 
-                'Biological Sciences', 
-                'Chemistry',
-                'Business', 
-                'Visual Arts', 
-                'English', 
-                'Mathematics', 
-                'Economics', 
-                'Medicine', 
-                'Political Science', 
-                'Physics'
-            )
-        )
+        department = get_random_department()
         annual_salary = round(random.randint(60000, 200000) / 5000) * 5000
         professors.append(
             {
@@ -143,47 +135,30 @@ def generate_random_professors(n: int) -> list[dict]:
     return professors
 
 
-def get_random_course() -> dict:
-    response = requests.get(f'http://localhost:8000/courses/', headers={'accept': 'application/json'})
+def generate_random_course() -> dict:
+    fake = Faker()
+    response = requests.get(f'http://api:8000/courses/', headers={'accept': 'application/json'})
     data = response.json()
     existing_ids = [record['id'] for record in data]
     id = None
     while id in existing_ids or id is None:
-        department_code = random.choice(config.departments)
-        response = requests.get(f'https://web-app.usc.edu/web/soc/api/classes/{department_code}/20241')
-        data = response.json()
-        idx = random.randint(0, len(data['OfferedCourses']['course'])-1)
-        id = data['OfferedCourses']['course'][idx]['PublishedCourseID']
-
-    department = data.get('Dept_Info').get('department')
-    name = data['OfferedCourses']['course'][idx]['CourseData']['title']
-    units = int(float(data['OfferedCourses']['course'][idx]['CourseData']['units']))
+        department_dict = get_random_department()
+        id = department_dict.get('department_code') + str(random.randint(100, 1200))
+    
+    name = fake.sentence(nb_words=6, variable_nb_words=True)
+    department = department_dict.get('department')
+    units = random.choices([1, 2, 3, 4], weights=[2, 3, 4, 5])[0]
     return {
         'id': id,
         'name': name,
-        'units': units,
-        'department': department
+        'department': department,
+        'units': units
     }
+
 
 def generate_random_courses(n: int) -> list[dict]:
     fake = Faker()
     courses = []
     for i in range(0, n):
-        department_code = random.choice(config.departments)
-        response = requests.get(f'https://web-app.usc.edu/web/soc/api/classes/{department_code}/20241')
-        if response.status_code != 200:
-            raise Exception(f'API call failed with status code: {response.status_code}')
-        data = response.json()
-        department = data.get('Dept_Info').get('department')
-        id = data['OfferedCourses']['course'][random.randint(0, len(data['OfferedCourses']['course'])-1)]['PublishedCourseID']
-        name = None
-        units = random.choices([1, 2, 3, 4], weights=[1, 5, 15, 20])
-
-        courses.append(
-            {
-                'id': id,
-                'name': name,
-                'units': units,
-                'department': department
-            }
-        )
+        courses.append(generate_random_course())
+    return courses
