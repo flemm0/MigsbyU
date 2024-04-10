@@ -210,11 +210,11 @@ def get_enrollments(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
 
 @app.delete('/enrollments/', tags=['enrollments'])
 def delete_enrollment(enrollment: schemas.Enrollment, db: Session = Depends(get_db)):
-    existing_enrollment = crud.get_enrollment(db=db, student_id=enrollment.student_id, course_id=enrollment.course_id, semester=enrollment.semester_id)
+    existing_enrollment = crud.get_enrollment(db=db, student_id=enrollment.student_id, course_id=enrollment.course_id, semester=enrollment.semester)
     if not existing_enrollment:
         raise HTTPException(status_code=400, detail='Enrollment not found')
     else:
-        crud.delete_enrollment(db=db, student_id=enrollment.student_id, course_id=enrollment.course_id, semester=enrollment.semester_id)
+        crud.delete_enrollment(db=db, student_id=enrollment.student_id, course_id=enrollment.course_id, semester=enrollment.semester)
         return {'ok': True}
     
 # endregion
@@ -224,7 +224,7 @@ def delete_enrollment(enrollment: schemas.Enrollment, db: Session = Depends(get_
 
 @app.post('/assignments/', response_model=schemas.Assignment, tags=['assignments'])
 def assign_professor(assignment: schemas.AssignmentCreate, db: Session = Depends(get_db)):
-    existing_assignment = crud.get_enrollment(db=db, professor_id=assignment.professor_id, course_id=assignment.course_id, semester=assignment.semester)
+    existing_assignment = crud.get_assignment(db=db, professor_id=assignment.professor_id, course_id=assignment.course_id, semester=assignment.semester)
     if existing_assignment:
         raise HTTPException(status_code=400, detail='Professor already assigned to this course for specified semester')
     return crud.assign_professor(db=db, assignment=assignment)
@@ -254,11 +254,11 @@ def get_assignments(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
 
 @app.delete('/assignments/', tags=['assignments'])
 def delete_assignment(assignment: schemas.Assignment, db: Session = Depends(get_db)):
-    existing_assignment = crud.get_assignment(db=db, professor_id=assignment.student_id, course_id=assignment.course_id, semester=assignment.semester_id)
+    existing_assignment = crud.get_assignment(db=db, professor_id=assignment.professor_id, course_id=assignment.course_id, semester=assignment.semester)
     if not existing_assignment:
         raise HTTPException(status_code=400, detail='Assignment not found')
     else:
-        crud.delete_enrollment(db=db, professor_id=assignment.student_id, course_id=assignment.course_id, semester=assignment.semester_id)
+        crud.delete_assignment(db=db, professor_id=assignment.professor_id, course_id=assignment.course_id, semester=assignment.semester)
         return {'ok': True}
 
 # endregion

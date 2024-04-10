@@ -188,3 +188,5 @@ def delete_assignment(db: Session, professor_id: str, course_id: str, semester: 
     ).delete()
     db.commit()
     return
+
+# endregion
