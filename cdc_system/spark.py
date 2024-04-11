@@ -20,7 +20,10 @@ df = spark.readStream \
 
 json_df = df.selectExpr("cast(value as string) as value")
 
-json_expanded_df = json_df.withColumn("value", fc.from_json(json_df["value"], schemas.schema)).select("value.*").select('payload.*').select('after.*')
+json_expanded_df = json_df.withColumn("value", fc.from_json(json_df["value"], schemas.schema)) \
+    .select("value.*") \
+    .select('payload.*') \
+    .select('after.*')
 
 # exploded_df = json_expanded_df.select(fc.explode('payload').alias('payload'))
 
