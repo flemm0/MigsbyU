@@ -9,6 +9,7 @@ services:
       POSTGRES_USER: pguser
       POSTGRES_PASSWORD: password
       POSTGRES_DB: prod
+    command: ['postgres', '-c', 'wal_level=logical']
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
       - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
@@ -39,6 +40,103 @@ services:
       - api
     networks:
       - migsbyu_network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.1
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: echo srvr | nc zookeeper 2181 || exit 1
+      start_period: 10s
+      retries: 20
+      interval: 10s
+    networks:
+      - migsbyu_network
+  kafka:
+    image: confluentinc/cp-kafka:7.3.1
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9991
+    ports:
+      - '9092:9092'
+    networks:
+      - migsbyu_network
+  debezium:
+    image: debezium/connect:latest
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: connect_configs
+      STATUS_STORAGE_TOPIC: connect_statuses
+      OFFSET_STORAGE_TOPIC: connect_offsets
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      ENABLE_DEBEZIUM_SCRIPTING: 'true'
+    volumes:
+      - ./debezium/debezium.json:/debezium.json
+    # command: >
+    #   sh -c "curl -i -X POST -H 'Content-Type: application/json' --data @/debezium.json 127.0.0.1:8083/connectors"
+    depends_on: [kafka]
+    ports:
+      - 8083:8083
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '--silent',
+          '--fail',
+          '-X',
+          'GET',
+          'http://localhost:8083/connectors',
+        ]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - migsbyu_network
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.3.1
+    environment:
+      - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=zookeeper:2181
+      - SCHEMA_REGISTRY_HOST_NAME=schema-registry
+      - SCHEMA_REGISTRY_LISTENERS=http://schema-registry:8081,http://localhost:8081
+      - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=kafka:9092
+    ports:
+      - 8081:8081
+    depends_on: [zookeeper, kafka]
+    networks:
+      - migsbyu_network
+
+  cdc_system:
+    build:
+      context: ./cdc_system
+      dockerfile: Dockerfile
+    image: migsbyu_cdc_system
+    restart: "unless-stopped"
+    depends_on:
+      - kafka
+      - debezium
+      - zookeeper
+      - schema-registry
+    networks:
+      - migsbyu_network
+
+
 
 networks:
   migsbyu_network:
