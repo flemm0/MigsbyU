@@ -13,7 +13,6 @@ services:
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
       - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-      - ./data_lake:/data_lake/
     networks:
       - migsbyu_network
   api:
@@ -39,6 +38,9 @@ services:
     depends_on:
       - postgres
       - api
+      - cdc_system
+    volumes:
+      - ./data_lake:/data_lake/
     networks:
       - migsbyu_network
 
@@ -86,10 +88,6 @@ services:
       CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       ENABLE_DEBEZIUM_SCRIPTING: 'true'
-    volumes:
-      - ./debezium:/debezium/
-    # command: >
-    #   sh -c "/debezium/init_debezium.sh &"
     depends_on: [kafka]
     ports:
       - 8083:8083
