@@ -13,6 +13,7 @@ services:
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
       - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+      - ./data_lake:/data_lake/
     networks:
       - migsbyu_network
   api:
@@ -86,9 +87,9 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       ENABLE_DEBEZIUM_SCRIPTING: 'true'
     volumes:
-      - ./debezium/debezium.json:/debezium.json
+      - ./debezium:/debezium/
     # command: >
-    #   sh -c "curl -i -X POST -H 'Content-Type: application/json' --data @/debezium.json 127.0.0.1:8083/connectors"
+    #   sh -c "/debezium/init_debezium.sh &"
     depends_on: [kafka]
     ports:
       - 8083:8083
@@ -109,6 +110,16 @@ services:
       retries: 5
     networks:
       - migsbyu_network
+  debezium-setup:
+    image: ubuntu:latest
+    command: >
+      sh -c "apt-get update && apt-get install -y curl && /debezium/init_debezium.sh"
+    volumes:
+      - ./debezium:/debezium/
+    networks:
+      - migsbyu_network
+    depends_on:
+      - debezium
   schema-registry:
     image: confluentinc/cp-schema-registry:7.3.1
     environment:
