@@ -13,5 +13,5 @@ WORKDIR /app
 COPY . .
 
 # Run the Python script when the container starts
-# CMD ["python", "consumer.py"]
+# CMD ["python", "main.py"]
 CMD ["tail", "-f", "/dev/null"]
