@@ -20,17 +20,20 @@ df = spark.readStream \
 
 json_df = df.selectExpr("cast(value as string) as value")
 
-json_expanded_df = json_df.withColumn("value", fc.from_json(json_df["value"], schemas.schema)) \
-    .select("value.*") \
-    .select('payload.*') \
-    .select('after.*')
+json_expanded_df = json_df.withColumn('value', fc.from_json(json_df['value'], schemas.schema)) \
+    .select('value.payload.after.*', fc.from_unixtime(fc.col('value.payload.source.ts_ms') / 1000).alias('source_datetime'))
 
-# exploded_df = json_expanded_df.select(fc.explode('payload').alias('payload'))
+# query = resultDF.writeStream \
+#     .outputMode('append') \
+#     .format('console') \
+#     .option('truncate', 'false') \
+#     .start()
 
 query = json_expanded_df.writeStream \
-    .outputMode("append") \
-    .format("console") \
-    .option("truncate", "false") \
+    .format('parquet') \
+    .option('path', '/data_lake/students/data') \
+    .option('checkpointLocation', '/data_lake/students/checkpoint') \
+    .outputMode('append') \
     .start()
 
 query.awaitTermination()

@@ -122,24 +122,6 @@ services:
     networks:
       - migsbyu_network
 
-  cdc_system:
-    build:
-      context: ./cdc_system
-      dockerfile: Dockerfile
-    image: migsbyu_cdc_system
-    restart: "unless-stopped"
-    depends_on:
-      - kafka
-      - debezium
-      - zookeeper
-      - schema-registry
-      - spark-master
-      - spark-worker
-    networks:
-      - migsbyu_network
-    volumes:
-      - ./cdc_system:/app
-
   spark-master:
     image: bitnami/spark:latest
     command: bin/spark-class org.apache.spark.deploy.master.Master
@@ -160,6 +142,25 @@ services:
       SPARK_MASTER_URL: spark://spark-master:7077
     networks:
       - migsbyu_network
+
+  cdc_system:
+    build:
+      context: ./cdc_system
+      dockerfile: Dockerfile
+    image: migsbyu_cdc_system
+    restart: "unless-stopped"
+    depends_on:
+      - kafka
+      - debezium
+      - zookeeper
+      - schema-registry
+      - spark-master
+      - spark-worker
+    networks:
+      - migsbyu_network
+    volumes:
+      - ./cdc_system:/app
+      - ./data_lake:/data_lake/
 
 networks:
   migsbyu_network:
