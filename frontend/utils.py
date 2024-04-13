@@ -126,7 +126,7 @@ def generate_random_professors(n: int) -> list[dict]:
             gender = 'Female'
         address = fake.address()
         date_of_birth = fake.date_of_birth(minimum_age=30, maximum_age=70)
-        department = get_random_department()
+        department = get_random_department().get('department')
         annual_salary = round(random.randint(60000, 200000) / 5000) * 5000
         professors.append(
             {
