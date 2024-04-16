@@ -190,3 +190,116 @@ courses_schema = StructType([
         ]), nullable=True)
     ]), nullable=False)
 ])
+
+
+
+takes_schema = StructType([
+    StructField("schema", StructType([
+        StructField("type", StringType(), nullable=False),
+        StructField("fields", StructType([
+            StructField("type", StringType(), nullable=False),
+            StructField("fields", StructType([
+                StructField("type", StringType(), nullable=False),
+                StructField("optional", StringType(), nullable=False),
+                StructField("field", StringType(), nullable=False)
+            ]), nullable=True),
+            StructField("optional", StringType(), nullable=True),
+            StructField("name", StringType(), nullable=True),
+            StructField("version", IntegerType(), nullable=True),
+            StructField("field", StringType(), nullable=False)
+        ]), nullable=True),
+        StructField("optional", StringType(), nullable=True),
+        StructField("name", StringType(), nullable=False),
+        StructField("version", IntegerType(), nullable=True),
+        StructField("field", StringType(), nullable=False)
+    ]), nullable=False),
+    StructField("payload", StructType([
+        StructField("before", StructType([
+            StructField("student_id", StringType(), nullable=False),
+            StructField("course_id", StringType(), nullable=True),
+            StructField("semester", StringType(), nullable=True)
+        ]), nullable=True),
+        StructField("after", StructType([
+            StructField("student_id", StringType(), nullable=False),
+            StructField("course_id", StringType(), nullable=True),
+            StructField("semester", StringType(), nullable=True)
+        ]), nullable=True),
+        StructField("source", StructType([
+            StructField("version", StringType(), nullable=False),
+            StructField("connector", StringType(), nullable=False),
+            StructField("name", StringType(), nullable=False),
+            StructField("ts_ms", LongType(), nullable=False),
+            StructField("snapshot", StringType(), nullable=True),
+            StructField("db", StringType(), nullable=False),
+            StructField("sequence", StringType(), nullable=True),
+            StructField("schema", StringType(), nullable=False),
+            StructField("table", StringType(), nullable=False),
+            StructField("txId", LongType(), nullable=True),
+            StructField("lsn", LongType(), nullable=True),
+            StructField("xmin", StringType(), nullable=True)
+        ]), nullable=False),
+        StructField("op", StringType(), nullable=False),
+        StructField("ts_ms", LongType(), nullable=True),
+        StructField("transaction", StructType([
+            StructField("id", StringType(), nullable=False),
+            StructField("total_order", LongType(), nullable=False),
+            StructField("data_collection_order", LongType(), nullable=False)
+        ]), nullable=True)
+    ]), nullable=False)
+])
+
+
+teaches_schema = StructType([
+    StructField("schema", StructType([
+        StructField("type", StringType(), nullable=False),
+        StructField("fields", StructType([
+            StructField("type", StringType(), nullable=False),
+            StructField("fields", StructType([
+                StructField("type", StringType(), nullable=False),
+                StructField("optional", StringType(), nullable=False),
+                StructField("field", StringType(), nullable=False)
+            ]), nullable=True),
+            StructField("optional", StringType(), nullable=True),
+            StructField("name", StringType(), nullable=True),
+            StructField("version", IntegerType(), nullable=True),
+            StructField("field", StringType(), nullable=False)
+        ]), nullable=True),
+        StructField("optional", StringType(), nullable=True),
+        StructField("name", StringType(), nullable=False),
+        StructField("version", IntegerType(), nullable=True),
+        StructField("field", StringType(), nullable=False)
+    ]), nullable=False),
+    StructField("payload", StructType([
+        StructField("before", StructType([
+           StructField("professor_id", StringType(), nullable=False),
+            StructField("course_id", StringType(), nullable=True),
+            StructField("semester", StringType(), nullable=True)
+        ]), nullable=True),
+        StructField("after", StructType([
+            StructField("professor_id", StringType(), nullable=False),
+            StructField("course_id", StringType(), nullable=True),
+            StructField("semester", StringType(), nullable=True)
+        ]), nullable=True),
+        StructField("source", StructType([
+            StructField("version", StringType(), nullable=False),
+            StructField("connector", StringType(), nullable=False),
+            StructField("name", StringType(), nullable=False),
+            StructField("ts_ms", LongType(), nullable=False),
+            StructField("snapshot", StringType(), nullable=True),
+            StructField("db", StringType(), nullable=False),
+            StructField("sequence", StringType(), nullable=True),
+            StructField("schema", StringType(), nullable=False),
+            StructField("table", StringType(), nullable=False),
+            StructField("txId", LongType(), nullable=True),
+            StructField("lsn", LongType(), nullable=True),
+            StructField("xmin", StringType(), nullable=True)
+        ]), nullable=False),
+        StructField("op", StringType(), nullable=False),
+        StructField("ts_ms", LongType(), nullable=True),
+        StructField("transaction", StructType([
+            StructField("id", StringType(), nullable=False),
+            StructField("total_order", LongType(), nullable=False),
+            StructField("data_collection_order", LongType(), nullable=False)
+        ]), nullable=True)
+    ]), nullable=False)
+])

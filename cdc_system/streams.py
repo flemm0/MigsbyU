@@ -83,3 +83,56 @@ def courses_streaming_query(spark, testing=False):
             .start()
 
     return query
+
+
+def enrollments_streaming_query(spark, testing=False):
+    df = read_kafka_topic(spark_conn=spark, topic='migsbyu.public.takes')
+
+    json_df = df.selectExpr('cast(value as string) as value')
+
+    courses_df = json_df \
+        .withColumn('value', fc.from_json(json_df['value'], schemas.takes_schema)) \
+        .select('value.payload.after.*', fc.from_unixtime(fc.col('value.payload.source.ts_ms') / 1000).alias('source_datetime')) \
+    
+    if testing:
+        query = (courses_df.writeStream \
+                .outputMode('append') \
+                .format('console') \
+                .option('truncate', 'false') \
+                .start())
+    else:
+        query = courses_df.writeStream \
+            .format('parquet') \
+            .option('path', '/data_lake/takes/data') \
+            .option('checkpointLocation', '/data_lake/takes/checkpoint') \
+            .outputMode('append') \
+            .start()
+
+    return query
+
+
+
+def assignments_streaming_query(spark, testing=False):
+    df = read_kafka_topic(spark_conn=spark, topic='migsbyu.public.teaches')
+
+    json_df = df.selectExpr('cast(value as string) as value')
+
+    courses_df = json_df \
+        .withColumn('value', fc.from_json(json_df['value'], schemas.teaches_schema)) \
+        .select('value.payload.after.*', fc.from_unixtime(fc.col('value.payload.source.ts_ms') / 1000).alias('source_datetime')) \
+    
+    if testing:
+        query = (courses_df.writeStream \
+                .outputMode('append') \
+                .format('console') \
+                .option('truncate', 'false') \
+                .start())
+    else:
+        query = courses_df.writeStream \
+            .format('parquet') \
+            .option('path', '/data_lake/teaches/data') \
+            .option('checkpointLocation', '/data_lake/teaches/checkpoint') \
+            .outputMode('append') \
+            .start()
+
+    return query
