@@ -4,13 +4,19 @@ def dimension_table_query(table: str, columns: list[str]) -> str:
     query = f"""
     CREATE OR REPLACE TEMPORARY SEQUENCE surrogate_key_gen;
     CREATE OR REPLACE TABLE {table}_dimension AS (
-        WITH current_row_indicator_added AS (
+        WITH base_table AS (
+            SELECT
+                nextval('surrogate_key_gen') AS {table[:-1]}_key,
+                * 
+            FROM '/data_lake/{table}/data/*.parquet'
+        ),
+        current_row_indicator_added AS (
             SELECT *,
                 CASE WHEN source_datetime = max_source_datetime THEN 'yes' ELSE 'no' END AS current_row_indicator
             FROM  (
                 SELECT *,
                     MAX(source_datetime) OVER (PARTITION BY id) AS max_source_datetime
-                FROM '/data_lake/{table}/data/*.parquet'
+                FROM base_table
             ) temp
         ),
         end_effective_date_added AS (
@@ -23,7 +29,7 @@ def dimension_table_query(table: str, columns: list[str]) -> str:
         ),
         final AS (
             SELECT
-                nextval('surrogate_key_gen') AS {table[:-1]}_key,
+                {table[:-1]}_key,
                 {columns_str},
                 source_datetime::timestamp AS effective_date_start,
                 effective_date_end::timestamp - interval 1 second AS effective_date_end,
