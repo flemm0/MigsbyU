@@ -26,6 +26,7 @@ def read_kafka_topic(spark_conn: SparkSession, topic: str):
             .option('kafka.bootstrap.servers', 'kafka:9092') \
             .option('subscribe', topic) \
             .option('startingOffsets', 'earliest') \
+            .option('failOnDataLoss', 'false') \
             .load()
         logging.info('Kafka topic read successfully')
     except Exception as e:
