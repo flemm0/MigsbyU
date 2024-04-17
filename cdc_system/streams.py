@@ -92,7 +92,29 @@ def enrollments_streaming_query(spark, testing=False):
 
     courses_df = json_df \
         .withColumn('value', fc.from_json(json_df['value'], schemas.takes_schema)) \
-        .select('value.payload.after.*', fc.from_unixtime(fc.col('value.payload.source.ts_ms') / 1000).alias('source_datetime')) \
+        .select(
+            fc.col('value.payload.before.student_id').alias('before_student_id'),
+            fc.col('value.payload.before.course_id').alias('before_course_id'),
+            fc.col('value.payload.before.semester').alias('before_semester'), 
+            fc.col('value.payload.after.student_id').alias('after_student_id'),
+            fc.col('value.payload.after.course_id').alias('after_course_id'),
+            fc.col('value.payload.after.semester').alias('after_semester'), 
+            fc.from_unixtime(fc.col('value.payload.source.ts_ms') / 1000).alias('source_datetime')
+        ) \
+        .withColumn('student_id', fc.coalesce(fc.col('before_student_id'), fc.col('after_student_id'))) \
+        .withColumn('course_id', fc.coalesce(fc.col('before_course_id'), fc.col('after_course_id'))) \
+        .withColumn('semester', fc.coalesce(fc.col('before_semester'), fc.col('after_semester'))) \
+        .na.drop('all') \
+        .withColumn('course_enrollment_count',
+                    fc.when(fc.col('after_student_id').isNull() & fc.col('after_course_id').isNull() & fc.col('after_semester').isNull(), fc.lit(-1))
+                    .otherwise(fc.lit(1))) \
+        .select(
+            fc.col('student_id'),
+            fc.col('course_id'),
+            fc.col('semester'),
+            fc.col('course_enrollment_count'),
+            fc.col('source_datetime')
+        )
     
     if testing:
         query = (courses_df.writeStream \
