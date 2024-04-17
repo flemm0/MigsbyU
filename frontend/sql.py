@@ -56,8 +56,7 @@ def fact_table_query() -> str:
         SELECT 
             student_key,
             course_key,
-            takes.*,
-            1 AS course_enrollment_count
+            takes.*
         FROM '/data_lake/takes/data/*.parquet' AS takes
         JOIN students_dimension
         ON students_dimension.id = takes.student_id
@@ -83,11 +82,11 @@ def fact_table_query() -> str:
         SELECT
             student_key,
             professor_key,
-            student_enrollments.course_key,
-            student_enrollments.semester,
+            COALESCE(student_enrollments.course_key, professor_assignments.course_key) AS course_key,
+            COALESCE(student_enrollments.semester, professor_assignments.semester) AS semester,
             course_enrollment_count
         FROM student_enrollments
-        JOIN professor_assignments
+        FULL JOIN professor_assignments
         ON student_enrollments.course_id = professor_assignments.course_id
     )
     SELECT *
