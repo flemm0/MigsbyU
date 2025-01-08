@@ -1,4 +1,4 @@
-streamlit==1.33.0
+streamlit==1.41.0
 requests==2.31.0
 polars==0.20.18
 faker==24.7.1
